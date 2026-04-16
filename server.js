@@ -2,7 +2,7 @@
   const cloudinary = require('cloudinary').v2
   const http = require('http')
   const fs = require('fs')
-  const port = 3008
+  const port = process.env.PORT || 3000
 
   cloudinary.config({
   	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
