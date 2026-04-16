@@ -2,7 +2,7 @@
   const cloudinary = require('cloudinary').v2
   const http = require('http')
   const fs = require('fs')
-  const port = process.env.PORT || 3000
+  const port = process.env.PORT || 3008
 
   cloudinary.config({
   	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -25,13 +25,13 @@
     }
 
     if( method === 'GET') {
-      if(url === '/') {
-        const reader = fs.createReadStream('cloudinary.html')
+      if(url === '/upload') {
+        const reader = fs.createReadStream('upload.html')
         reader.pipe(res)
       } 
 
-      if(url === '/upload') {
-        let content = fs.readFileSync('upload.html', 'utf8')
+      if(url === '/') {
+        let content = fs.readFileSync('list.html', 'utf8')
         const addresses = await fetchResource()
         let part = ""
 
@@ -39,7 +39,6 @@
           part += `<li><a href="${v}" target="_blank">${k}</a></li>`
         })
 
-        console.log(part)
         content = content.replace("worship_list_here", part)
         res.writeHead(200, {"Content-Type": "text/html"})
         res.end(content)
