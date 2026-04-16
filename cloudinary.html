@@ -1,0 +1,261 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Cloudinary Upload api</title>
+</head>
+
+<style>
+	:root {
+		--color1: gold;
+		--color2: transparent;
+	}
+	body {
+		margin: 0;
+		font-family: sans-serif;
+	}
+
+	img {
+		max-width: 100%;
+	}
+
+	#upload {
+		display: grid;
+		align-content: start;
+		grid-column: 1 / span 2;
+	}
+
+	#upload label {
+		font-size: 1.5rem;
+		font-weight: bold;
+		margin-bottom: 1rem;
+	}
+
+	#upload input {
+		margin-bottom: 3rem;
+	}
+
+	#upload button {
+		padding: 1rem 3rem;
+		border-radius: 0.5rem;
+		background-color: powderblue;
+		font-size: 1.2rem;
+		font-weight: 500;
+		cursor: pointer;
+	}
+
+	#upload button:hover {
+		background-color: lightblue;
+	}
+
+	#imagesToUpload ul {
+		margin: 0;
+	}
+
+	.layout {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-rows: auto 1fr;
+		gap: 3rem;
+		padding: 5rem;
+		box-sizing: border-box;
+		height: 100dvh;
+		max-width: 120rem;
+		margin: 0 auto;
+	}
+
+	.area {
+		border: 0.25rem solid black;
+		border-radius: 1rem;
+		padding: 4rem;
+	}
+
+	.area:has(img) {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		grid-gap: 2rem;
+		align-content: start;
+		align-items: center;
+	}
+
+	p {
+		min-width: 300px;
+		color: #999;
+		font-size: 12px;
+	}
+
+	.process {
+		display: none;
+		position: absolute;
+		left: calc(50% - 20px);
+		top: calc(50% - 20px);
+		box-sizing: border-box;
+		width: 40px;
+		height: 40px;
+		border: 10px solid;
+		border-image-slice: 10;
+		animation: rotateG 1.5s linear infinite;
+	}
+
+	@keyframes rotateG {
+		0% {
+			/* 边框样式设置 */
+			border-image-source: linear-gradient(0deg, var(--color1), var(--color2));
+		}
+		12% {
+			border-image-source: linear-gradient(45deg, var(--color1), var(--color2));
+		}
+		25% {
+			border-image-source: linear-gradient(90deg, var(--color1), var(--color2));
+		}
+		37% {
+			border-image-source: linear-gradient(135deg, var(--color1), var(--color2));
+		}
+		50% {
+			border-image-source: linear-gradient(180deg, var(--color1), var(--color2));
+		}
+		62% {
+			border-image-source: linear-gradient(225deg, var(--color1), var(--color2));
+		}
+		75% {
+			border-image-source: linear-gradient(270deg, var(--color1), var(--color2));
+		}
+		87% {
+			border-image-source: linear-gradient(315deg, var(--color1), var(--color2));
+		}
+		100% {
+			border-image-source: linear-gradient(360deg, var(--color1), var(--color2));
+		}
+	}
+	.show {
+		display: block;
+	}
+
+</style>
+<body>
+	<div class="layout">
+		<p>由于是免费额度，建议一周内不要上传超过 25 张图片！<br>并且每张图片的文件大小要尽量小于 3mb，最大不要超过 5mb！</p>
+		<form class="area" id="upload" method="post" enctype="multipart/form-data">
+			<label for="images">Choose images to upload</label>
+
+			<input
+			type="file"
+			id="images"
+			name="images"
+			accept=".jpg, .png"
+			multiple
+			/>
+
+			<button id="submit" type="submit">Upload</button>
+		</form>
+
+		<div id="imagesToUpload" class="area">
+			<span>No images selected yet.</span>
+		</div>
+
+		<div id="uploadedImages" class="area">
+			<span>No images uploaded yet.</span>
+		</div>
+	</div>
+
+	<div class="process"></div>
+
+	<script>
+		const btn = document.getElementById('submit')
+		const imgs = document.getElementById('images')
+		const list = document.getElementById('imagesToUpload')
+		const list_span = list.querySelector('span')
+		const uploaded = document.getElementById('uploadedImages')
+		const uploaded_span = uploaded.querySelector('span')
+
+		let files = {}
+		// 放置上次选择图片未上传导致残留信息
+		imgs.value = null
+
+		imgs.addEventListener('change', e => {
+
+			if(imgs.files.length > 5) {
+				imgs.value = null
+				list.innerHTML = ""
+				list.appendChild(list_span)
+				return alert("最多只能同时上传 5 张图片！")
+			}
+
+			for(let i = 0; i < imgs.files.length; i++) {
+				if(imgs.files[i].size > 5 * 1024 * 1024) {
+					imgs.value = null
+					return alert("上传文件尺寸过大，请调整文件尺寸在 5mb 以下！")
+				}
+			}
+
+			const ul = document.createElement('ul')
+			console.log(imgs.files[0])
+
+			for(let i = 0; i < imgs.files.length; i++) {
+				const li = document.createElement('li')
+				li.innerHTML = imgs.files[i].name
+				ul.appendChild(li)
+			}
+
+			list.replaceChildren()
+			const h3 = document.createElement('h3')
+			h3.textContent = '待上传文件'
+			list.appendChild(h3)
+			list.appendChild(ul)
+			files = imgs.files
+		})
+
+		btn.addEventListener('click', async (e) => {
+			e.preventDefault()
+
+			if(imgs.files.length === 0) {
+				return alert("请先选择要上传的图片！")
+			}
+
+			const url = "https://api.cloudinary.com/v1_1/djhfb4ulh/image/upload"
+			const wait = document.querySelector('.process')
+			wait.classList.add('show')
+			const h3 = document.createElement('h3')
+			h3.textContent = '已上传文件'
+			uploaded.innerHTML = ""
+			uploaded.appendChild(h3)
+
+			let section = document.createElement('section')
+			// 由于 cloudinary 官方接口只支持单文件上传，所以要使用遍历
+			for(const file of files) {
+				const form = new FormData()
+				// 这里的字段名不能变，后面的值是文件对象
+				form.append('file', file)
+				// 这里的字段名不能变，后面的值只能是上传预设的名字
+				form.append('upload_preset', 'worship')
+				// 保留文件原名为 public_id 基础
+				// form.append('use_filename', 'true')
+				// 确保文件名是唯一
+				// form.append('unique_filename', 'true')
+
+				const result = await fetch(url, {
+					method: 'POST',
+					body: form
+				})
+
+				if(result.ok) {
+					const data = await result.json()
+
+					const p = document.createElement('p')
+					p.textContent = data.original_filename + "." + data.format
+					section.appendChild(p)
+				}
+			}
+
+			uploaded.appendChild(section)
+			list.innerHTML = ""
+			imgs.value = null
+			wait.classList.remove('show')
+		})
+
+	</script>
+
+</body>
+</html>

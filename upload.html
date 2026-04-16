@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>worship for Lord's day</title>
+</head>
+<body>
+	<style>
+		body {
+			font-size: 28px;
+
+			& button {
+				padding: 1em;
+				font-size: 15px;
+			}
+			& li {
+				margin: .5em;
+			}
+		}
+	</style>
+	<button class="refresh">先点我来更新页面内容</button>
+	<ol>
+		worship_list_here
+	</ol>
+	<script>
+		const btn = document.querySelector('.refresh')
+
+		btn.addEventListener('click', e => {
+			e.preventDefault()
+
+			window.location.reload()
+		})
+	</script>
+</body>
+</html>
