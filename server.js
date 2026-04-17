@@ -34,12 +34,14 @@
         let content = fs.readFileSync('list.html', 'utf8')
         const addresses = await fetchResource()
         let part = ""
+        let images = ""
 
         addresses.forEach((v, k) => {
           part += `<li><a href="${v}" target="_blank">${k}</a></li>`
+          images += `<img src="${v}">`
         })
 
-        content = content.replace("worship_list_here", part)
+        content = content.replace("worship_list_here", part).replace("image_list_here", images)
         res.writeHead(200, {"Content-Type": "text/html"})
         res.end(content)
       }
@@ -75,10 +77,6 @@
         map.set(e.display_name, e.secure_url)
       })
 
-      // console.log(map)
-      // map.forEach((v,k) => {
-      //   console.log("key: ", k, "\nvalue: ", v)
-      // })
       return map
     } catch (err) {
       console.error("error:", err.message)

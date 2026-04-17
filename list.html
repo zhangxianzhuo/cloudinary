@@ -8,21 +8,61 @@
 <body>
 	<style>
 		body {
+			position: relative;
 			font-size: 28px;
 
 			& button {
 				padding: 1em;
 				font-size: 15px;
 			}
+
 			& li {
 				margin: .5em;
 			}
+
+			& .view {
+				display: flex;
+				position: absolute;
+				top: 0;
+				left: 0;
+				overflow-x: auto;
+				scroll-snap-type: x mandatory;
+
+				& img {
+					width: 100%;
+					flex: 0 0 100%;
+					scroll-snap-align: center;
+				}
+			}
+		}
+
+		.close {
+			display: none;
+			position: absolute;
+			width: 20px;
+			height: 20px;
+			top: 0;
+			right: 0;
+			color: #fff;
+			text-shadow: 0 1px 1px #000;
+			font: 1em/1em sans-serif;
+			cursor: pointer;
+		}
+		.show {
+			display: block;
+		}
+		body .hide-img {
+			display: none;
 		}
 	</style>
 	<button class="refresh">先点我来更新页面内容</button>
 	<ol>
 		worship_list_here
 	</ol>
+	<div class="view">
+		image_list_here
+	</div>
+	<span class="close">×</span>
 	<script>
 		const btn = document.querySelector('.refresh')
 
@@ -30,6 +70,30 @@
 			e.preventDefault()
 
 			window.location.reload()
+		})
+
+		const A = document.querySelectorAll('ol li a')
+		const album = document.querySelector('.view')
+		const hide = document.querySelector('.close')
+		album.classList.add('hide-img')
+
+		A.forEach((a,i) => {
+			a.addEventListener('click', e => {
+				e.preventDefault()
+
+				album.classList.remove('hide-img')
+				hide.classList.add('show')
+				album.scrollTo({
+					left: album.clientWidth * i,
+					top: 0,
+					behavior: 'smooth'
+				})
+			})
+		})
+
+		hide.addEventListener('click', e => {
+				album.classList.add('hide-img')
+				hide.classList.remove('show')
 		})
 	</script>
 </body>
