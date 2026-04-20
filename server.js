@@ -1,60 +1,76 @@
-  require('dotenv').config()
-  const cloudinary = require('cloudinary').v2
-  const http = require('http')
-  const fs = require('fs')
-  const port = process.env.PORT || 3008
+require('dotenv').config()
+const cloudinary = require('cloudinary').v2
+const http = require('http')
+const fs = require('fs')
+const Url = require('url')
+const port = process.env.PORT || 3008
 
-  cloudinary.config({
-  	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  	api_key: process.env.CLOUDINARY_API_KEY,
-  	api_secret: process.env.CLOUDINARY_API_SECRET
-  })
 
-  const server = http.createServer(async (req, res) => {
-    const {url, method} = req
+cloudinary.config({
+ cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+ api_key: process.env.CLOUDINARY_API_KEY,
+ api_secret: process.env.CLOUDINARY_API_SECRET
+})
 
-    if(method === 'OPTIONS') {
-      res.writeHead(204)
-      res.end()
-      return
+const server = http.createServer(async (req, res) => {
+  const {url, method} = req
+  const purl = Url.parse(req.url, true)
+
+  if(method === 'OPTIONS') {
+    res.writeHead(204)
+    res.end()
+    return
+  }
+  if(url === '/favicon.ico') {
+    res.writeHead(204)
+    res.end()
+    return
+  }
+
+  if( method === 'GET') {
+    if(url === '/upload') {
+      const reader = fs.createReadStream('upload.html')
+      reader.pipe(res)
+    } 
+
+    if(url === '/') {
+      let content = fs.readFileSync('list.html', 'utf8')
+      const addresses = await fetchResource()
+      let part = ""
+      let images = ""
+
+      addresses.forEach((v, k) => {
+        part += `<li><a href="${v}" target="_blank">${k}</a></li>`
+        images += `<img src="${v}">`
+      })
+
+      content = content.replace("worship_list_here", part).replace("image_list_here", images)
+      res.writeHead(200, {"Content-Type": "text/html"})
+      res.end(content)
     }
-    if(url === '/favicon.ico') {
-      res.writeHead(204)
-      res.end()
-      return
-    }
 
-    if( method === 'GET') {
-      if(url === '/upload') {
-        const reader = fs.createReadStream('upload.html')
-        reader.pipe(res)
-      } 
-
-      if(url === '/') {
-        let content = fs.readFileSync('list.html', 'utf8')
-        const addresses = await fetchResource()
-        let part = ""
-        let images = ""
-
-        addresses.forEach((v, k) => {
-          part += `<li><a href="${v}" target="_blank">${k}</a></li>`
-          images += `<img src="${v}">`
+    if(purl.pathname === '/deleteall') {
+      if(purl.query.user === 'zxz') {
+        const result = await cloudinary.api.delete_resources_by_prefix('worship/', {
+          type: 'upload'
         })
-
-        content = content.replace("worship_list_here", part).replace("image_list_here", images)
-        res.writeHead(200, {"Content-Type": "text/html"})
-        res.end(content)
+        console.log(Object.keys(result.deleted).length)
       }
-      return
+      
+      res.writeHead(200)
+      res.end("delete")
     }
 
-    res.writeHead(404, "good", {"Content-Type": "text/plain; charset=utf-8"})
-    res.end("没有匹配到任何请求！")  
-  })
+    return
+  }
 
-  server.listen(port, () => {
-    console.log(`server is running at http://172.18.40.46:${port}`)
-  })
+  res.writeHead(404, "good", {"Content-Type": "text/plain; charset=utf-8"})
+  res.end("没有匹配到任何请求！")  
+})
+
+server.listen(port, () => {
+  console.log(`server is running at http://172.18.40.46:${port}`)
+})
 
 
 
@@ -64,21 +80,21 @@
 
 
   // 获取资源列表使用 search API
-  async function fetchResource() {
-    try {
-      const map = new Map()
-      const result = await cloudinary.search
-      .expression('folder:worship')
-      .sort_by('public_id')
-      .max_results(10)
-      .execute()
+async function fetchResource() {
+  try {
+    const map = new Map()
+    const result = await cloudinary.search
+    .expression('folder:worship')
+    .sort_by('public_id')
+    .max_results(10)
+    .execute()
 
-      result.resources.forEach(e => {
-        map.set(e.display_name, e.secure_url)
-      })
+    result.resources.forEach(e => {
+      map.set(e.display_name, e.secure_url)
+    })
 
-      return map
-    } catch (err) {
-      console.error("error:", err.message)
-    }
+    return map
+  } catch (err) {
+    console.error("error:", err.message)
   }
+}
