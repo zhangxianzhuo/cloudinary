@@ -80,6 +80,25 @@
 		align-items: center;
 	}
 
+	.del {
+		grid-column: 1 / span 2;
+		padding: 2rem;
+
+		span {
+			color: red;
+			margin-right: 2rem;
+		}
+
+		input[type=submit] {
+			padding: 1rem 2rem;
+			font-size: 1.2rem;
+			/*font-weight: bold;*/
+			color: #fff;
+			background-color: orange;
+			border-radius: 0.5rem;
+		}
+	}
+
 	p {
 		min-width: 300px;
 		color: #999;
@@ -158,6 +177,10 @@
 		<div id="uploadedImages" class="area">
 			<span>No images uploaded yet.</span>
 		</div>
+
+		<div class="del area">
+			<span>注意：此操作会删除所有已经上传的图片</span><input type="submit" value="Delete">
+		</div>
 	</div>
 
 	<div class="process"></div>
@@ -169,9 +192,11 @@
 		const list_span = list.querySelector('span')
 		const uploaded = document.getElementById('uploadedImages')
 		const uploaded_span = uploaded.querySelector('span')
+		const del = document.querySelector('.del input[type=submit]')
+		console.log(del)
 
 		let files = {}
-		// 放置上次选择图片未上传导致残留信息
+	// 放置上次选择图片未上传导致残留信息
 		imgs.value = null
 
 		imgs.addEventListener('change', e => {
@@ -223,17 +248,17 @@
 			uploaded.appendChild(h3)
 
 			let section = document.createElement('section')
-			// 由于 cloudinary 官方接口只支持单文件上传，所以要使用遍历
+		// 由于 cloudinary 官方接口只支持单文件上传，所以要使用遍历
 			for(const file of files) {
 				const form = new FormData()
-				// 这里的字段名不能变，后面的值是文件对象
+			// 这里的字段名不能变，后面的值是文件对象
 				form.append('file', file)
-				// 这里的字段名不能变，后面的值只能是上传预设的名字
+			// 这里的字段名不能变，后面的值只能是上传预设的名字
 				form.append('upload_preset', 'worship')
-				// 保留文件原名为 public_id 基础
-				// form.append('use_filename', 'true')
-				// 确保文件名是唯一
-				// form.append('unique_filename', 'true')
+			// 保留文件原名为 public_id 基础
+			// form.append('use_filename', 'true')
+			// 确保文件名是唯一
+			// form.append('unique_filename', 'true')
 
 				const result = await fetch(url, {
 					method: 'POST',
@@ -253,6 +278,17 @@
 			list.innerHTML = ""
 			imgs.value = null
 			wait.classList.remove('show')
+		})
+
+		del.addEventListener("click", async (e) => {
+			e.preventDefault()
+
+			const url = "/deleteall?user=zxz"
+			const res = await fetch(url)
+
+			if(res.ok) {
+				console.log(await res.text())
+			}
 		})
 
 	</script>
