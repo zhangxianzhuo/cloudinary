@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,
+minimum-scale=1.0, user-scalable=no">
 	<title>worship for Lord's day</title>
 </head>
 <body>
@@ -10,6 +12,10 @@
 		body {
 			position: relative;
 			font-size: 28px;
+			/*max-width: 100vwd;*/
+			max-width: 100%;
+			height: auto;
+			overflow-x: hidden;
 
 			& button {
 				padding: 1em;
@@ -25,12 +31,14 @@
 				position: absolute;
 				top: 0;
 				left: 0;
-// height: 100dvh;
-				overflow-x: auto;
+				width: 100%;
+				height: auto;
+				overflow-x: hidden;
 				scroll-snap-type: x mandatory;
 
 				& img {
-width: 100%;
+					max-width: 100%;
+					height: auto;
 					flex: 0 0 100%;
 					scroll-snap-align: center;
 				}
@@ -93,8 +101,8 @@ width: 100%;
 		})
 
 		hide.addEventListener('click', e => {
-				album.classList.add('hide-img')
-				hide.classList.remove('show')
+			album.classList.add('hide-img')
+			hide.classList.remove('show')
 		})
 	</script>
 </body>

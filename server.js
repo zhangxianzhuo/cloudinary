@@ -3,7 +3,7 @@ const cloudinary = require('cloudinary').v2
 const http = require('http')
 const fs = require('fs')
 const Url = require('url')
-const port = process.env.PORT || 3008
+const port = process.env.PORT || 3100
 
 
 cloudinary.config({
@@ -39,10 +39,13 @@ const server = http.createServer(async (req, res) => {
       let part = ""
       let images = ""
 
-      addresses.forEach((v, k) => {
+      for(let [k, v] of addresses) {
+        if(k.length > 14) {
+          k = k.slice(0, 14) + "..."
+        }
         part += `<li><a href="${v}" target="_blank">${k}</a></li>`
         images += `<img src="${v}">`
-      })
+      }
 
       content = content.replace("worship_list_here", part).replace("image_list_here", images)
       res.writeHead(200, {"Content-Type": "text/html"})
@@ -69,6 +72,8 @@ const server = http.createServer(async (req, res) => {
 })
 
 server.listen(port, () => {
+  const address = server.address()
+  console.log(address.address)
   console.log(`server is running at http://172.18.40.46:${port}`)
 })
 
